@@ -55,13 +55,15 @@
     #search:focus { border-color: var(--purple); box-shadow: 0 0 0 4px rgba(104,64,131,.13); }
     #clear { position: absolute; right: .55rem; top: 50%; translate: 0 -50%; border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 50%; width: 30px; height: 30px; }
 
-    main { width: 100%; height: calc(100vh - 72px); min-height: 0; display: grid; place-items: center; overflow: hidden; }
+    main { width: 100%; height: calc(100vh - 72px); min-height: 0; position: relative; overflow: hidden; }
     .orbit-stage {
       width: 1360px;
       height: 850px;
       min-height: 850px;
       flex: 0 0 auto;
-      position: relative;
+      position: absolute;
+      left: 50%;
+      top: 50%;
       isolation: isolate;
       transform-origin: 50% 50%;
     }
@@ -278,7 +280,7 @@
     let resizeFrame;
     function fitStage() {
       const scale = Math.min(main.clientWidth / 1360, main.clientHeight / 850, 1);
-      stage.style.transform = `scale(${Math.max(scale, .1)})`;
+      stage.style.transform = `translate(-50%, -50%) scale(${Math.max(scale, .1)})`;
     }
     function refreshLayout() {
       cancelAnimationFrame(resizeFrame);
