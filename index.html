@@ -23,7 +23,7 @@
     html, body { min-height: 100%; }
     body {
       margin: 0;
-      overflow-x: hidden;
+      overflow: hidden;
       color: var(--ink);
       background: #fff;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -55,13 +55,15 @@
     #search:focus { border-color: var(--purple); box-shadow: 0 0 0 4px rgba(104,64,131,.13); }
     #clear { position: absolute; right: .55rem; top: 50%; translate: 0 -50%; border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 50%; width: 30px; height: 30px; }
 
-    main { min-height: calc(100vh - 72px); display: grid; place-items: center; }
+    main { width: 100%; height: calc(100vh - 72px); min-height: 0; display: grid; place-items: center; overflow: hidden; }
     .orbit-stage {
-      width: min(1360px, 100vw);
-      height: min(850px, calc(100vh - 76px));
-      min-height: 680px;
+      width: 1360px;
+      height: 850px;
+      min-height: 850px;
+      flex: 0 0 auto;
       position: relative;
       isolation: isolate;
+      transform-origin: 50% 50%;
     }
     .orbit-stage::before, .orbit-stage::after {
       content: ""; position: absolute; left: 50%; top: 50%; translate: -50% -50%; border: 1px dashed var(--ring); border-radius: 50%; z-index: -2;
@@ -161,7 +163,7 @@
     }
     .empty { display: none; position: absolute; inset: 50% auto auto 50%; translate: -50% 170px; color: var(--muted); font-weight: 750; text-align: center; }
 
-    @media (max-width: 900px), (max-height: 760px) {
+    @media (max-width: 0px) {
       header { min-height: 78px; }
       main { display: block; }
       .orbit-stage { width: min(760px, 100%); height: auto; min-height: 0; padding: 1.4rem 1rem 4rem; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: .8rem; }
@@ -172,7 +174,7 @@
       .status { bottom: 1rem; }
       .empty { position: static; translate: none; width: 100%; }
     }
-    @media (max-width: 520px) {
+    @media (max-width: 0px) {
       header { width: calc(100% - 1rem); padding-block: .6rem; align-items: flex-start; flex-direction: column; gap: .5rem; }
       .search-wrap { width: 100%; }
       .orbit-stage { padding-inline: .5rem; gap: .55rem; }
@@ -226,6 +228,7 @@
 
   <script>
     const stage = document.querySelector('.orbit-stage');
+    const main = document.querySelector('main');
     const resources = [...document.querySelectorAll('.resource')];
     const search = document.querySelector('#search');
     const clear = document.querySelector('#clear');
@@ -245,10 +248,6 @@
     });
 
     function arrangeOrbit() {
-      if (matchMedia('(max-width: 900px), (max-height: 760px)').matches) {
-        resources.forEach(item => item.style.transform = '');
-        return;
-      }
       const width = stage.clientWidth;
       const height = stage.clientHeight;
       const rings = {
@@ -277,9 +276,14 @@
     search.addEventListener('input', filterResources);
     clear.addEventListener('click', () => { search.value = ''; search.focus(); filterResources(); });
     let resizeFrame;
+    function fitStage() {
+      const scale = Math.min(main.clientWidth / 1360, main.clientHeight / 850, 1);
+      stage.style.transform = `scale(${Math.max(scale, .1)})`;
+    }
     function refreshLayout() {
       cancelAnimationFrame(resizeFrame);
       resizeFrame = requestAnimationFrame(() => {
+        fitStage();
         arrangeOrbit();
         if (typeof woodsModel.updateFraming === 'function') woodsModel.updateFraming();
       });
@@ -290,12 +294,12 @@
       layoutObserver.observe(stage);
       layoutObserver.observe(centerHub);
     }
-    addEventListener('load', arrangeOrbit);
+    addEventListener('load', refreshLayout);
     document.addEventListener('keydown', event => {
       if (event.key === '/' && document.activeElement !== search) { event.preventDefault(); search.focus(); }
       if (event.key === 'Escape' && document.activeElement === search) { search.value = ''; filterResources(); search.blur(); }
     });
-    arrangeOrbit();
+    refreshLayout();
   </script>
 </body>
 </html>
